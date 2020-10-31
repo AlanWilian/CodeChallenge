@@ -60,7 +60,7 @@ namespace RetailSolution.Models
             var calcBreakNightShift = HoursRegistry
                        .Where(sr => sr.Date >= initial && sr.Date <= final && sr.Shift == true)
                        .Select(x => x.Hours)
-                       .Aggregate(0, (x, y) => { return (int)(x + (y >= 4 ? (y * 15) + 30 : y * 15) + ((float)Math.Floor(y / 12) * 40)); });
+                       .Aggregate(0, (x, y) => { return (int)(x + (y >= 4 ? (y * 15) + ((float)Math.Floor(y / 4) * 30) : y * 15) + ((float)Math.Floor(y / 12) * 40)); });
 
             var calcBreakShift = HoursRegistry
                         .Where(sr => sr.Date >= initial && sr.Date <= final && sr.Shift == false)
