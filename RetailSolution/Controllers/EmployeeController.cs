@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RetailSolution.Data;
+using RetailSolution.Interfaces;
 using RetailSolution.Models;
 using RetailSolution.Models.ViewModels;
-using RetailSolution.Services;
 using RetailSolution.Services.Exceptions;
 using System;
 using System.Diagnostics;
@@ -12,18 +11,17 @@ namespace RetailSolution.Controllers
 {
     public class EmployeeController : Controller
     {
-        private readonly EmployeeService _EmployeeService;
-        private readonly RetailContext _context;
-
-        public EmployeeController(EmployeeService employeeService, RetailContext context)
+        private readonly IEmployee _employeeRepository;
+        
+        public EmployeeController(IEmployee employeeRepository)
         {
-            _EmployeeService = employeeService;
-            _context = context;
+            _employeeRepository = employeeRepository;
+            
         }
 
         public async Task<IActionResult> Index()
         {
-            var list = await _EmployeeService.FindAllAsync();
+            var list = await _employeeRepository.GetEmployeesAsync();
             return View(list);
         }
 
@@ -38,8 +36,7 @@ namespace RetailSolution.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(employee);
-                await _context.SaveChangesAsync();
+               await _employeeRepository.SaveAllAsync();                
                 return RedirectToAction(nameof(Index));
             }
             return View(employee);
@@ -52,7 +49,7 @@ namespace RetailSolution.Controllers
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = await _EmployeeService.FindByIdAsync(id.Value);
+            var obj = await _employeeRepository.GetEmployeeByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
@@ -63,11 +60,11 @@ namespace RetailSolution.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public IActionResult Delete(int id)
         {
             try
             {
-                await _EmployeeService.RemoveAsync(id);
+                 _employeeRepository.DeleteById(id);
                 return RedirectToAction(nameof(Index));
             }
             catch (IntegrityException e)
@@ -83,7 +80,7 @@ namespace RetailSolution.Controllers
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = await _EmployeeService.FindByIdAsync(id.Value);
+            var obj = await _employeeRepository.GetEmployeeByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
@@ -92,14 +89,9 @@ namespace RetailSolution.Controllers
             return View(obj);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var employees = await _context.Employees.FindAsync(id);
+            var employees = await _employeeRepository.GetEmployeeByIdAsync(id);
             if (employees == null)
             {
                 return NotFound();
@@ -109,20 +101,16 @@ namespace RetailSolution.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Employees employee)
+        public IActionResult Edit(Employees employee)
         {
-            if (!ModelState.IsValid)
+             if (!ModelState.IsValid)
             {
                 return View(employee);
             }
 
-            if (id != employee.Id)
-            {
-                return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
-            }
             try
             {
-                await _EmployeeService.UpdateAsync(employee);
+                _employeeRepository.Update(employee);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException e)

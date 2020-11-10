@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RetailSolution.Data;
+using RetailSolution.Interfaces;
 using RetailSolution.Models;
 using RetailSolution.Services.Exceptions;
 using System;
@@ -46,7 +47,7 @@ namespace RetailSolution.Services
             }
             catch (DbUpdateException)
             {
-                throw new IntegrityException("Can't delete seller because he/she has sales");
+                throw new Exception("Can't delete employee");
             }
 
         }
@@ -68,8 +69,6 @@ namespace RetailSolution.Services
                 throw new DbConcurrencyException(e.Message);
             }
         }
-
-
     }
 
 }

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RetailSolution.Data;
+using RetailSolution.Interfaces;
 using RetailSolution.Services;
 
 namespace RetailSolution
@@ -40,7 +41,7 @@ namespace RetailSolution
                            builder.MigrationsAssembly("RetailSolution")));
 
             services.AddScoped<SeedingService>();
-            services.AddScoped<EmployeeService>();
+            services.AddScoped<IEmployee, EmplyeeRepository>();
             services.AddScoped<EmployeesRecordService>();
             services.AddScoped<HoursRegistryService>();
         }
